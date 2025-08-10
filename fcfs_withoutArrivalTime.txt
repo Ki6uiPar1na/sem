@@ -1,0 +1,69 @@
+#include<bits/stdc++.h>
+using namespace std;
+ifstream in("input.txt");
+ofstream out("output.txt");
+
+void printGanttChart(vector<pair<string, int>> &chart) {
+    out << "\nGantt Chart:\n";
+
+    // Top bar
+    out << " ";
+    for (auto &p : chart) {
+        out << string(4, '-') << " ";
+    }
+    out << "\n|";
+
+    // Process IDs
+    for (auto &p : chart) {
+        out << " " << setw(2) << p.first << " |";
+    }
+    out << "\n ";
+
+    // Bottom bar
+    for (auto &p : chart) {
+        out << string(4, '-') << " ";
+    }
+    out << "\n0"; // Starting time
+
+    // Times
+    for (auto &p : chart) {
+        out << setw(5) << p.second;
+    }
+    out << "\n";
+}
+
+int main(){
+	int n; 
+	in >> n;
+
+	vector<pair<string, int>> v(n);
+
+	int count = 0;
+	vector<pair<int, int>> ans(n);
+
+	for(int i = 0; i < n; i++){
+		in >> v[i].first >> v[i].second;
+	}
+
+	for(int i = 0; i < n; i++){
+		if(i == 0){
+			ans[i].first = 0;
+			count += v[i].second;
+			ans[i].second = count;
+		}
+		else{
+			ans[i].first = count;
+			count += v[i].second;
+			ans[i].second = count;
+		}
+	}
+    out << "PID\tWaiting Time\tCompletion Time\tTurnaround Time\n";
+	for(int i = 0; i < n; i++){
+		out << v[i].first << setw(10) << ans[i].first << setw(15) << ans[i].second << setw(15) << ans[i].first + v[i].second << endl;
+	}
+    vector<pair<string, int>> ganttChart;
+    for(int i = 0; i < n; i++){
+        ganttChart.push_back({v[i].first, ans[i].second});
+    }   
+    printGanttChart(ganttChart);
+}

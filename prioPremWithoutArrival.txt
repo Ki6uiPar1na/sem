@@ -1,0 +1,37 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+
+    vector<pair<string, pair<int, int>>> proc(n);
+    // {PID, {BT, Priority}}
+
+    for (int i = 0; i < n; i++)
+        cin >> proc[i].first >> proc[i].second.first >> proc[i].second.second;
+
+    vector<int> btLeft(n), ct(n);
+    for (int i = 0; i < n; i++) btLeft[i] = proc[i].second.first;
+
+    int completed = 0, time = 0;
+    while (completed != n) {
+        int idx = -1, bestPriority = INT_MAX;
+        for (int i = 0; i < n; i++) {
+            if (btLeft[i] > 0 && proc[i].second.second < bestPriority) {
+                bestPriority = proc[i].second.second;
+                idx = i;
+            }
+        }
+        btLeft[idx]--;
+        time++;
+        if (btLeft[idx] == 0) {
+            completed++;
+            ct[idx] = time;
+        }
+    }
+
+    cout << "PID\tCT\n";
+    for (int i = 0; i < n; i++)
+        cout << proc[i].first << "\t" << ct[i] << "\n";
+}

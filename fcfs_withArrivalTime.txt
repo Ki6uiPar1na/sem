@@ -1,0 +1,76 @@
+#include <bits/stdc++.h>
+using namespace std;
+ifstream in("input.txt");
+ofstream out("output.txt");
+
+void printGanttChart(vector<pair<string, int>> &chart) {
+    out << "\nGantt Chart:\n";
+
+    // Top bar
+    out << " ";
+    for (auto &p : chart) {
+        out << string(4, '-') << " ";
+    }
+    out << "\n|";
+
+    // Process IDs
+    for (auto &p : chart) {
+        out << " " << setw(2) << p.first << " |";
+    }
+    out << "\n ";
+
+    // Bottom bar
+    for (auto &p : chart) {
+        out << string(4, '-') << " ";
+    }
+    out << "\n0"; // Starting time
+
+    // Times
+    for (auto &p : chart) {
+        out << setw(5) << p.second;
+    }
+    out << "\n";
+}
+
+int main() {
+
+    int n; in >> n;
+
+    vector<pair<int, pair<string, int>>> v(n);
+    for (int i = 0; i < n; i++) {
+        in >> v[i].second.first >> v[i].first >> v[i].second.second;
+    }
+
+    sort(v.begin(), v.end()); // sort by arrival time
+
+    int count = 0;
+    map<string, tuple<int, int, int>> mp; // start, completion, arrival
+
+    for (int i = 0; i < n; i++) {
+        string pid = v[i].second.first;
+        int arrival = v[i].first;
+        int burst = v[i].second.second;
+
+        if (count < arrival) count = arrival; // idle time
+        int start = count;
+        count += burst;
+        int completion = count;
+
+        mp[pid] = {start, completion, arrival};
+    }
+
+    for (int i = 0; i < n; i++) {
+        string pid = v[i].second.first;
+        int start = get<0>(mp[pid]);
+        int completion = get<1>(mp[pid]);
+        int arrival = get<2>(mp[pid]);
+        int waiting = start - arrival;
+        out << pid << ' ' << waiting << ' ' << completion << '\n';
+    }
+
+    vector<pair<string, int>> chart; // (PID, completion time)
+    for (const auto &p : mp) {
+        chart.push_back({p.first, get<1>(p.second)});
+    }
+    printGanttChart(chart);
+}

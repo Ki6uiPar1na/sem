@@ -1,0 +1,89 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+void printGanttChart(vector<pair<string, int>> &chart) {
+    cout << "\nGantt Chart:\n";
+
+    // Top bar
+    cout << " ";
+    for (auto &p : chart) {
+        cout << string(4, '-') << " ";
+    }
+    cout << "\n|";
+
+    // Process IDs
+    for (auto &p : chart) {
+        cout << " " << setw(2) << p.first << " |";
+    }
+    cout << "\n ";
+
+    // Bottom bar
+    for (auto &p : chart) {
+        cout << string(4, '-') << " ";
+    }
+    cout << "\n0"; // Starting time
+
+    // Times
+    for (auto &p : chart) {
+        cout << setw(5) << p.second;
+    }
+    cout << "\n";
+}
+
+
+int main() {
+    int n; 
+    cin >> n;
+
+    vector<pair<string, int>> vp(n);
+    queue<string> q;
+    map<string, int> mp; // remaining burst time
+
+    int quantum; 
+    cin >> quantum;
+
+    // Input
+    for (int i = 0; i < n; i++) {
+        // cout << "PID & BT: ";
+        cin >> vp[i].first >> vp[i].second;
+        q.push(vp[i].first);
+        mp[vp[i].first] = vp[i].second;
+    }
+
+    int currentTime = 0;
+    vector<pair<string, int>> chart; // (PID, completion time)
+
+    map<string, pair<int, int>> arrivalTimeandCompletionTime;
+
+    while (!q.empty()) {
+        string pid = q.front();
+        q.pop();
+
+        int remaining = mp[pid];
+
+        if(arrivalTimeandCompletionTime.find(pid) == arrivalTimeandCompletionTime.end()) {
+            arrivalTimeandCompletionTime[pid] = {currentTime, 0};
+        }
+
+        if (remaining <= quantum && remaining > 0) {
+            currentTime += remaining;
+            mp[pid] = 0;
+            chart.push_back({pid, currentTime});
+            arrivalTimeandCompletionTime[pid].second = currentTime; // Update completion time
+        } 
+        else if (remaining > quantum) {
+            currentTime += quantum;
+            mp[pid] -= quantum;
+            q.push(pid); // still has time left
+            chart.push_back({pid, currentTime});
+        }
+    }
+
+    printGanttChart(chart);
+
+    for(auto &i : arrivalTimeandCompletionTime) {
+        cout << i.first << " " << i.second.first << " " << i.second.second << "\n";
+    }
+
+    return 0;
+}

@@ -1,0 +1,68 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+ifstream in("input.txt");
+ofstream out("output.txt");
+
+int main() {
+    int n;
+    in >> n;
+
+    vector<pair<int, string>> vp(n); // {burst_time, pid}
+    for (int i = 0; i < n; i++) {
+        in >> vp[i].second >> vp[i].first;
+    }
+
+    map<string, pair<int, int>> times; // {pid -> {start_time, completion_time}}
+    vector<string> gantt;              // Gantt chart order
+
+    int time = 0;
+    int completed = 0;
+
+    while (completed < n) {
+        // sort by remaining burst time, then by PID to break ties
+        sort(vp.begin(), vp.end(), [](auto &a, auto &b) {
+            if (a.first == b.first)
+                return a.second < b.second;
+            return a.first < b.first;
+        });
+
+        // find first unfinished process
+        int idx = -1;
+        for (int i = 0; i < n; i++) {
+            if (vp[i].first > 0) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx == -1) break; // no remaining process
+
+        string pid = vp[idx].second;
+        if (times.find(pid) == times.end()) {
+            times[pid].first = time; // start time
+        }
+
+        gantt.push_back(pid);
+        vp[idx].first--; // execute 1 unit of time
+        time++;
+
+        if (vp[idx].first == 0) {
+            times[pid].second = time; // completion time
+            completed++;
+        }
+    }
+
+    // Output Gantt chart
+    out << "Gantt Chart:\n";
+    for (auto &p : gantt) out << p << " ";
+    out << "\n\n";
+
+    // Output completion times
+    out << "PID\tCompletion Time\n";
+    for (auto &p : times) {
+        out << p.first << "\t" << p.second.second << "\n";
+    }
+
+    return 0;
+}

@@ -1,0 +1,56 @@
+#include <bits/stdc++.h>
+using namespace std;
+ifstream in("input.txt");
+ofstream out("output.txt");
+
+int main() {
+    int n;
+    in >> n;
+
+    // pid, arrival, burst
+    vector<pair<string, pair<int,int>>> vp(n);
+    for(int i = 0; i < n; i++){
+        in >> vp[i].first >> vp[i].second.first >> vp[i].second.second;
+    }
+
+    // Remaining time tracker
+    vector<pair<string,int>> rem;
+    for(auto &p : vp) rem.push_back({p.first, p.second.second});
+
+    // Map: PID -> (arrival time, completion time)
+    map<string, pair<int,int>> mp;
+    for(auto &p : vp) mp[p.first] = {p.second.first, 0};
+
+    int time = 0, completed = 0;
+    while(completed < n) {
+        int idx = -1;
+        int minRem = INT_MAX;
+
+        // Pick shortest job among arrived ones
+        for(int i = 0; i < n; i++){
+            if(mp[rem[i].first].first <= time && rem[i].second > 0) {
+                if(rem[i].second < minRem) {
+                    minRem = rem[i].second;
+                    idx = i;
+                }
+            }
+        }
+
+        if(idx != -1) {
+            rem[idx].second--;
+            time++;
+
+            if(rem[idx].second == 0) {
+                mp[rem[idx].first].second = time; // completion time
+                completed++;
+            }
+        } else {
+            time++; // idle time
+        }
+    }
+
+    out << "PID\tArrival\tCompletion\n";
+    for(auto &p : vp) {
+        out << p.first << "\t" << mp[p.first].first << "\t" << mp[p.first].second << "\n";
+    }
+}

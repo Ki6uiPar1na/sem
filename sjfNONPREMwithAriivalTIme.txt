@@ -1,0 +1,92 @@
+#include <bits/stdc++.h>
+using namespace std;
+ifstream in("input.txt");
+ofstream out("output.txt"); 
+
+void printGanttChart(vector<pair<string, int>> &chart) {
+    out << "\nGantt Chart:\n";
+
+    // Top bar
+    out << " ";
+    for (auto &p : chart) {
+        out << string(4, '-') << " ";
+    }
+    out << "\n|";
+
+    // Process IDs
+    for (auto &p : chart) {
+        out << " " << setw(2) << p.first << " |";
+    }
+    out << "\n ";
+
+    // Bottom bar
+    for (auto &p : chart) {
+        out << string(4, '-') << " ";
+    }
+    out << "\n0"; // Starting time
+
+    // Times
+    for (auto &p : chart) {
+        out << setw(5) << p.second;
+    }
+    out << "\n";
+}
+
+int main() {
+    int n;
+    in >> n;
+
+    vector<pair<int, pair<int, string>>> proc(n);
+    // first = arrival time
+    // second.first = burst time
+    // second.second = PID
+
+    for (int i = 0; i < n; i++) {
+        in >> proc[i].second.second >> proc[i].first >> proc[i].second.first;
+    }
+
+    vector<int> completion(n, 0), turnaround(n, 0), waiting(n, 0);
+    vector<bool> done(n, false);
+
+    int time = 0, completed = 0;
+
+    while (completed < n) {
+        int idx = -1, minBT = INT_MAX;
+        for (int i = 0; i < n; i++) {
+            if (!done[i] && proc[i].first <= time) {
+                if (proc[i].second.first < minBT) {
+                    minBT = proc[i].second.first;
+                    idx = i;
+                }
+            }
+        }
+
+        if (idx == -1) { // no process is ready
+            time++;
+            continue;
+        }
+
+        time += proc[idx].second.first;
+        completion[idx] = time;
+        turnaround[idx] = completion[idx] - proc[idx].first;
+        waiting[idx] = turnaround[idx] - proc[idx].second.first;
+        done[idx] = true;
+        completed++;
+    }
+
+    out << "PID\tAT\tBT\tCT\tTAT\tWT\n";
+    for (int i = 0; i < n; i++) {
+        out << proc[i].second.second << "\t"
+             << proc[i].first << "\t"
+             << proc[i].second.first << "\t"
+             << completion[i] << "\t"
+             << turnaround[i] << "\t"
+             << waiting[i] << "\n";
+    }
+    vector<pair<string, int>> gantChart;
+    for(int i = 0; i < n; i++) {
+        gantChart.push_back({proc[i].second.second, completion[i]});
+    }
+    printGanttChart(gantChart);
+    return 0;
+}
